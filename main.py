@@ -1047,7 +1047,13 @@ def main():
     try: asyncio.get_event_loop()
     except RuntimeError: asyncio.set_event_loop(asyncio.new_event_loop())
 
-    BOT_TOKEN = "8671762395:AAGmNjfP8_wER5lbyvzpcrBEbsruURVvyaw"
+    # Safely retrieve token from environment variable
+    BOT_TOKEN = os.environ.get("BOT_TOKEN")
+    
+    if not BOT_TOKEN:
+        logger.error("CRITICAL ERROR: BOT_TOKEN environment variable not set! Shutting down...")
+        return
+        
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
     conv_handler = ConversationHandler(
