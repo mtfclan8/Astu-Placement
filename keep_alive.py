@@ -1,8 +1,8 @@
+# keep_alive.py
 from flask import Flask
 from threading import Thread
 import logging
 
-# Disable Flask logging to keep your console clean
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
