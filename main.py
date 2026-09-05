@@ -1,4 +1,4 @@
-# 1. Add this at the very top of main.py
+# main.py
 from keep_alive import keep_alive
 import logging
 import sqlite3
@@ -19,7 +19,6 @@ from telegram.ext import (
 )
 from playwright.async_api import async_playwright
 
-
 # ========================================================
 # ADMIN CONFIGURATION
 # ========================================================
@@ -39,7 +38,6 @@ logger = logging.getLogger(__name__)
 (CHOOSING_ACTION, SCHOOL, GPA_CURRENT, GPA_NEXT, GENDER, 
  DEPT_1, DEPT_2, CONFIRM, AWAITING_ADMIN_MSG, VERIFY_NAME) = range(10)
 
-# Predefined ASTU Schools & Departments
 SCHOOL_DEPARTMENTS = {
     "School of Applied Natural Science (#SoASN)": [
         "Applied Biology",
@@ -75,13 +73,31 @@ SCHOOL_MAP = {
     "SoEEC": "School of Electrical Engineering and Computing (#SoEEC)"
 }
 
-# Custom Filters
+# Custom Command Filters (Matches both /command and .command)
 CMD_START = filters.Regex(r'^[\./]start$')
 CMD_CANCEL = filters.Regex(r'^[\./]cancel$')
 CMD_VIEW = filters.Regex(r'^[\./]view$')
 CMD_USERS = filters.Regex(r'^[\./]users$')
 CMD_ADMIN = filters.Regex(r'^[\./]admin$')
 CUSTOM_TEXT = filters.TEXT & ~filters.COMMAND & ~filters.Regex(r'^[\./]')
+
+async def edit_or_reply(target, text: str, reply_markup=None, parse_mode: str = "Markdown"):
+    """Helper to cleanly edit existing messages or reply without duplicating."""
+    try:
+        if hasattr(target, 'edit_message_text'):
+            return await target.edit_message_text(text, reply_markup=reply_markup, parse_mode=parse_mode)
+        elif hasattr(target, 'message') and target.message and hasattr(target.message, 'edit_text'):
+            return await target.message.edit_text(text, reply_markup=reply_markup, parse_mode=parse_mode)
+        elif hasattr(target, 'edit_text'):
+            return await target.edit_text(text, reply_markup=reply_markup, parse_mode=parse_mode)
+        elif hasattr(target, 'reply_text'):
+            return await target.reply_text(text, reply_markup=reply_markup, parse_mode=parse_mode)
+    except Exception as e:
+        logger.warning(f"edit_or_reply fallback triggered: {e}")
+        if hasattr(target, 'message') and target.message:
+            return await target.message.reply_text(text, reply_markup=reply_markup, parse_mode=parse_mode)
+        elif hasattr(target, 'reply_text'):
+            return await target.reply_text(text, reply_markup=reply_markup, parse_mode=parse_mode)
 
 def init_db():
     conn = sqlite3.connect("astu_placement.db")
@@ -123,11 +139,7 @@ def init_db():
     conn.commit()
     conn.close()
 
-# -----------------------------------------
-# DATABASE BACKUP HELPER
-# -----------------------------------------
 async def send_db_backup(context: ContextTypes.DEFAULT_TYPE, caption: str = "📦 Automatic Database Backup"):
-    """Securely sends the SQLite database to the ADMIN_ID."""
     if ADMIN_ID != 0:
         try:
             with open("astu_placement.db", "rb") as db_file:
@@ -185,10 +197,7 @@ async def check_access_and_respond(msg_obj, context: ContextTypes.DEFAULT_TYPE, 
     
     if not BOT_ACTIVE and user_id != ADMIN_ID:
         text = "🔴 *Maintenance Mode*\n\nThe bot is currently inactive. Please try again later."
-        if hasattr(msg_obj, 'edit_message_text'):
-            await msg_obj.edit_message_text(text, parse_mode="Markdown")
-        else:
-            await msg_obj.reply_text(text, parse_mode="Markdown")
+        await edit_or_reply(msg_obj, text, parse_mode="Markdown")
         return False
         
     conn = sqlite3.connect("astu_placement.db")
@@ -199,10 +208,7 @@ async def check_access_and_respond(msg_obj, context: ContextTypes.DEFAULT_TYPE, 
     
     if res and res[0] == 1:
         text = "⛔ *Banned*\n\nYou have been restricted from using this bot."
-        if hasattr(msg_obj, 'edit_message_text'):
-            await msg_obj.edit_message_text(text, parse_mode="Markdown")
-        else:
-            await msg_obj.reply_text(text, parse_mode="Markdown")
+        await edit_or_reply(msg_obj, text, parse_mode="Markdown")
         return False
         
     subbed = await is_subscribed(context, user_id)
@@ -213,10 +219,7 @@ async def check_access_and_respond(msg_obj, context: ContextTypes.DEFAULT_TYPE, 
         ]
         text = "⚠️ *Access Restricted*\n\nYou must join our channel to use this bot!"
         markup = InlineKeyboardMarkup(keyboard)
-        if hasattr(msg_obj, 'edit_message_text'):
-            await msg_obj.edit_message_text(text, reply_markup=markup, parse_mode="Markdown")
-        else:
-            await msg_obj.reply_text(text, reply_markup=markup, parse_mode="Markdown")
+        await edit_or_reply(msg_obj, text, reply_markup=markup, parse_mode="Markdown")
         return False
         
     return True
@@ -243,7 +246,15 @@ async def check_astu_student(full_name: str):
     
     try:
         async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=True, args=['--no-sandbox', '--disable-dev-shm-usage'])
+            browser = await p.chromium.launch(
+                headless=True, 
+                args=[
+                    '--no-sandbox', 
+                    '--disable-dev-shm-usage',
+                    '--disable-gpu',
+                    '--disable-setuid-sandbox'
+                ]
+            )
             context = await browser.new_context(viewport={'width': 1280, 'height': 800})
             page = await context.new_page()
             
@@ -316,32 +327,34 @@ async def prompt_verify_name(update_or_query, context: ContextTypes.DEFAULT_TYPE
     keyboard = [[InlineKeyboardButton("Cancel", callback_data="cancel")]]
     text = (
         "🎓 *ASTU Student Verification*\n\n"
-        "Before continuing, we need to verify that you are an unplaced ASTU student.\n"
-        "Please enter your *full name* exactly as it appears in your ASTU student record."
+        "To ensure placement stats remain accurate and genuine, we verify that every participant "
+        "is an unplaced ASTU student against the official university portal.\n\n"
+        "🔒 *Why share your full name?*\n"
+        "• **100% Anonymous:** Your name is **ONLY** used to confirm your student status.\n"
+        "• **Privacy Guaranteed:** Your name is **NEVER** stored with your choice submissions or shared with anyone.\n"
+        "• **Fair Statistics:** Prevents non-ASTU users or multiple fake submissions from skewing placement stats.\n\n"
+        "Please enter your *full name* exactly as registered in the ASTU portal:"
     )
-    if hasattr(update_or_query, 'edit_message_text'):
-        await update_or_query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
-    else:
-        await update_or_query.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+    await edit_or_reply(update_or_query, text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
     return VERIFY_NAME
 
 async def handle_verify_name_input(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     name_input = update.message.text.strip()
-    wait_msg = await update.message.reply_text("✨ Verifying that you’re an ASTU student…Please wait.")
+    wait_msg = await update.message.reply_text("✨ Verifying that you’re an ASTU student… Please wait.")
     
     status, detail = await check_astu_student(name_input)
     
     if status == "ERROR":
         keyboard = [[InlineKeyboardButton("🔄 Try Again", callback_data="action_register")], [InlineKeyboardButton("Cancel", callback_data="cancel")]]
-        await wait_msg.edit_text("⚠️ *Service Unavailable*\nPlease try again later.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+        await wait_msg.edit_text("⚠️ *Service Unavailable*\nCould not connect to ASTU portal. Please try again later.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
         return CHOOSING_ACTION
     elif status == "NOT_FOUND":
         keyboard = [[InlineKeyboardButton("🔄 Try Again", callback_data="action_register")], [InlineKeyboardButton("Cancel", callback_data="cancel")]]
-        await wait_msg.edit_text("❌ *Verification Failed*\nWe could not find your record.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+        await wait_msg.edit_text("❌ *Verification Failed*\nWe could not find your record on ASTU portal. Please double check the spelling and try again.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
         return CHOOSING_ACTION
     elif status == "WRONG_YEAR":
         keyboard = [[InlineKeyboardButton("🏠 Main Menu", callback_data="back_menu")]]
-        await wait_msg.edit_text(f"⛔ *Ineligible Batch*\nFound admission year: *{detail}*.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+        await wait_msg.edit_text(f"⛔ *Ineligible Batch*\nFound admission year: *{detail}*. Only unplaced fresh batch students are eligible.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
         return CHOOSING_ACTION
     elif status == "VERIFIED_ELIGIBLE":
         user_id = update.effective_user.id
@@ -358,10 +371,12 @@ async def handle_verify_name_input(update: Update, context: ContextTypes.DEFAULT
         
         if detected_school and detected_school in SCHOOL_DEPARTMENTS:
             context.user_data["school"] = detected_school
-            await wait_msg.edit_text(f"✅ *Verified*\n🏫 Detected School: {detected_school}\nProceeding to GPA entry...", parse_mode="Markdown")
+            await wait_msg.edit_text(f"✅ *Verified Student*\n🏫 Detected School: {detected_school}\n\nProceeding to GPA entry...", parse_mode="Markdown")
+            await asyncio.sleep(1)
             return await prompt_gpa_current(wait_msg, context)
         else:
-            await wait_msg.edit_text("✅ *Verified*\nPlease continue with your choices.", parse_mode="Markdown")
+            await wait_msg.edit_text("✅ *Verified Student*\nPlease continue with your choices.", parse_mode="Markdown")
+            await asyncio.sleep(1)
             return await prompt_school(wait_msg, context)
 
 # -----------------------------------------
@@ -400,12 +415,9 @@ async def show_main_menu(update_or_msg, user, is_edit=False):
     markup = InlineKeyboardMarkup(keyboard)
 
     if is_edit:
-        if hasattr(update_or_msg, 'edit_message_text'):
-            await update_or_msg.edit_message_text(text, reply_markup=markup, parse_mode="HTML")
-        elif hasattr(update_or_msg, 'edit_text'):
-            await update_or_msg.edit_text(text, reply_markup=markup, parse_mode="HTML")
+        await edit_or_reply(update_or_msg, text, reply_markup=markup, parse_mode="HTML")
     else:
-        await update_or_msg.reply_text(text, reply_markup=markup, parse_mode="HTML")
+        await edit_or_reply(update_or_msg, text, reply_markup=markup, parse_mode="HTML")
     return CHOOSING_ACTION
 
 async def do_register(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -435,7 +447,6 @@ async def do_register(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
                 pass
     conn.close()
 
-    # TRIGGER AUTO-BACKUP ONLY FOR NEW REGISTRATIONS
     if is_new:
         await send_db_backup(context, caption=f"📦 Auto-Backup: New Registration ({user.id})")
 
@@ -452,7 +463,8 @@ async def action_contact(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         [InlineKeyboardButton("Feedback", callback_data="contact_feedback")],
         [InlineKeyboardButton("Back to Main Menu", callback_data="back_menu")]
     ]
-    await query.edit_message_text(
+    await edit_or_reply(
+        query,
         "<b>Contact Admin</b>\n\nHow can we help you? Please select the type of message:",
         reply_markup=InlineKeyboardMarkup(keyboard),
         parse_mode="HTML"
@@ -466,7 +478,8 @@ async def handle_contact_choice(update: Update, context: ContextTypes.DEFAULT_TY
     context.user_data['contact_category'] = mapping[query.data]
     keyboard = [[InlineKeyboardButton("Cancel", callback_data="cancel")]]
     
-    await query.edit_message_text(
+    await edit_or_reply(
+        query,
         f"📩 <b>{mapping[query.data]}</b>\n\nPlease type your message below.",
         reply_markup=InlineKeyboardMarkup(keyboard),
         parse_mode="HTML"
@@ -495,30 +508,25 @@ async def receive_admin_msg(update: Update, context: ContextTypes.DEFAULT_TYPE) 
 # 5. PROMPT GENERATORS
 # -----------------------------------------
 
-async def prompt_school(query, context):
+async def prompt_school(query_or_msg, context):
     keyboard = []
     for abbrev, full_name in SCHOOL_MAP.items():
         keyboard.append([InlineKeyboardButton(full_name, callback_data=f"sch_{abbrev}")])
     keyboard.append([InlineKeyboardButton("Back", callback_data="back_menu"), InlineKeyboardButton("Cancel", callback_data="cancel")])
-    text = "*Step 1: Select your School (Fallback):*"
-    if hasattr(query, 'edit_message_text'):
-        await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
-    else:
-        await query.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+    text = "*Step 1: Select your School:*"
+    await edit_or_reply(query_or_msg, text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
     return SCHOOL
 
 async def prompt_gpa_current(msg_obj, context):
     keyboard = [[InlineKeyboardButton("Back", callback_data="back_school"), InlineKeyboardButton("Cancel", callback_data="cancel")]]
     text = f"🏫 *School:* {context.user_data.get('school')}\n\n*Step 2: Enter your CURRENT semester GPA*\n(1.50 - 4.00):"
-    if hasattr(msg_obj, 'edit_message_text'): await msg_obj.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
-    else: await msg_obj.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+    await edit_or_reply(msg_obj, text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
     return GPA_CURRENT
 
 async def prompt_gpa_next(msg_obj, context):
     keyboard = [[InlineKeyboardButton("Back", callback_data="back_gpacurr"), InlineKeyboardButton("Cancel", callback_data="cancel")]]
     text = "*Step 3: Enter your EXPECTED cumulative GPA after next semester*\n(1.50 - 4.00):"
-    if hasattr(msg_obj, 'edit_message_text'): await msg_obj.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
-    else: await msg_obj.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+    await edit_or_reply(msg_obj, text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
     return GPA_NEXT
 
 async def prompt_gender(msg_obj, context):
@@ -528,15 +536,14 @@ async def prompt_gender(msg_obj, context):
         [InlineKeyboardButton("Back", callback_data="back_gpanext"), InlineKeyboardButton("Cancel", callback_data="cancel")]
     ]
     text = "*Step 4: Select your Gender:*"
-    if hasattr(msg_obj, 'edit_message_text'): await msg_obj.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
-    else: await msg_obj.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+    await edit_or_reply(msg_obj, text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
     return GENDER
 
 async def prompt_dept1(query, context):
     depts = SCHOOL_DEPARTMENTS[context.user_data["school"]]
     keyboard = [[InlineKeyboardButton(d, callback_data=f"d1_{d}")] for d in depts]
     keyboard.append([InlineKeyboardButton("Back", callback_data="back_gender"), InlineKeyboardButton("Cancel", callback_data="cancel")])
-    await query.edit_message_text("*Step 5: Select your 1st Choice Department:*", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+    await edit_or_reply(query, "*Step 5: Select your 1st Choice Department:*", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
     return DEPT_1
 
 async def prompt_dept2(query, context):
@@ -545,7 +552,7 @@ async def prompt_dept2(query, context):
     remaining_depts = [d for d in SCHOOL_DEPARTMENTS[school] if d != dept_1]
     keyboard = [[InlineKeyboardButton(d, callback_data=f"d2_{d}")] for d in remaining_depts]
     keyboard.append([InlineKeyboardButton("Back", callback_data="back_dept1"), InlineKeyboardButton("Cancel", callback_data="cancel")])
-    await query.edit_message_text(f"🥇 *1st Choice:* {dept_1}\n\n*Step 6: Select your 2nd Choice Department:*", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+    await edit_or_reply(query, f"🥇 *1st Choice:* {dept_1}\n\n*Step 6: Select your 2nd Choice Department:*", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
     return DEPT_2
 
 async def prompt_confirm(query, context):
@@ -563,7 +570,7 @@ async def prompt_confirm(query, context):
         [InlineKeyboardButton("Confirm & Save", callback_data="cfm_save")],
         [InlineKeyboardButton("Back", callback_data="back_dept2"), InlineKeyboardButton("Cancel", callback_data="cancel")]
     ]
-    await query.edit_message_text(summary, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+    await edit_or_reply(query, summary, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
     return CONFIRM
 
 # -----------------------------------------
@@ -580,7 +587,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if update.message:
         msg = await update.message.reply_text("⏳ Initializing bot...\n█ ░ ░ ░ ░ ░ ░ ░ ░ ░ 10%")
         for bar in ["█ █ ░ ░ ░ ░ ░ ░ ░ ░ 20%", "█ █ █ █ ░ ░ ░ ░ ░ ░ 40%", "█ █ █ █ █ █ ░ ░ ░ ░ 60%", "█ █ █ █ █ █ █ █ ░ ░ 80%", "█ █ █ █ █ █ █ █ █ █ 100%"]:
-            await asyncio.sleep(0.2)
+            await asyncio.sleep(0.15)
             await msg.edit_text(f"⏳ Initializing bot...\n{bar}")
         return await show_main_menu(msg, user=user, is_edit=True)
     elif update.callback_query:
@@ -642,7 +649,7 @@ async def action_mydata(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
             f"• *2nd Choice:* {res[5]}\n"
             f"• *Last Updated:* {res[6]}\n\n"
         )
-    await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+    await edit_or_reply(query, text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
     return CHOOSING_ACTION
 
 async def show_batch_menu(msg_obj):
@@ -653,8 +660,7 @@ async def show_batch_menu(msg_obj):
         [InlineKeyboardButton("Back to Main Menu", callback_data="back_menu")]
     ]
     text = "🎓 *Select Batch Year:*\n\nPlease select which batch placement data you would like to view:"
-    if hasattr(msg_obj, 'edit_message_text'): await msg_obj.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
-    else: await msg_obj.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+    await edit_or_reply(msg_obj, text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
 
 async def action_view(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
@@ -695,10 +701,10 @@ async def gpa_current_choice(update: Update, context: ContextTypes.DEFAULT_TYPE)
             context.user_data["gpa_current"] = round(gpa, 2)
             return await prompt_gpa_next(update.message, context)
         else:
-            await update.message.reply_text("⚠️ Invalid GPA. (1.50 - 4.00):")
+            await update.message.reply_text("⚠️ Invalid GPA. Enter a value between 1.50 and 4.00:")
             return GPA_CURRENT
     except ValueError:
-        await update.message.reply_text("⚠️ Invalid format. (1.50 - 4.00):")
+        await update.message.reply_text("⚠️ Invalid format. Please enter a valid number (1.50 - 4.00):")
         return GPA_CURRENT
 
 async def gpa_next_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -708,10 +714,10 @@ async def gpa_next_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             context.user_data["gpa_next"] = round(gpa, 2)
             return await prompt_gender(update.message, context)
         else:
-            await update.message.reply_text("⚠️ Invalid GPA. (1.50 - 4.00):")
+            await update.message.reply_text("⚠️ Invalid GPA. Enter a value between 1.50 and 4.00:")
             return GPA_NEXT
     except ValueError:
-        await update.message.reply_text("⚠️ Invalid format. (1.50 - 4.00):")
+        await update.message.reply_text("⚠️ Invalid format. Please enter a valid number (1.50 - 4.00):")
         return GPA_NEXT
 
 async def gender_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -754,11 +760,10 @@ async def confirm_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     conn.commit()
     conn.close()
 
-    # TRIGGER AUTO-BACKUP FOR SUBMISSIONS
     await send_db_backup(context, caption=f"📦 Auto-Backup: New Submission by Hash {user_hash[:8]}")
 
     keyboard = [[InlineKeyboardButton("Back to Main Menu", callback_data="back_menu")]]
-    await query.edit_message_text("✅ *Data saved successfully!*\n\nYour details have been updated.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+    await edit_or_reply(query, "✅ *Data saved successfully!*\n\nYour details have been updated anonymously.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
     return CHOOSING_ACTION
 
 async def back_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -809,8 +814,7 @@ async def show_view_stats(msg_obj):
     if total_count == 0:
         text = "No student data has been recorded yet for 2018 Batch."
         keyboard = [[InlineKeyboardButton("Back", callback_data="action_view"), InlineKeyboardButton("Main Menu", callback_data="back_menu")]]
-        if hasattr(msg_obj, 'edit_message_text'): await msg_obj.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
-        else: await msg_obj.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
+        await edit_or_reply(msg_obj, text, reply_markup=InlineKeyboardMarkup(keyboard))
         conn.close()
         return
 
@@ -822,8 +826,7 @@ async def show_view_stats(msg_obj):
     keyboard.append([InlineKeyboardButton("Back", callback_data="action_view"), InlineKeyboardButton("Main Menu", callback_data="back_menu")])
 
     text = (f"📊 *ASTU Placement Statistics (2018 Batch)*\nTotal Anonymized Submissions: {total_count}\n\nSelect a department:")
-    if hasattr(msg_obj, 'edit_message_text'): await msg_obj.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
-    else: await msg_obj.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+    await edit_or_reply(msg_obj, text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
 
 async def view_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user_id = update.message.from_user.id
@@ -844,7 +847,7 @@ async def handle_view_callback(update: Update, context: ContextTypes.DEFAULT_TYP
         [InlineKeyboardButton("👩 Female Statistics", callback_data=f"vg_F_{dept_name[:30]}")],
         [InlineKeyboardButton("🔙 Back", callback_data="batch_2018")]
     ]
-    await query.edit_message_text(f"📊 *Department:* {dept_name}\n\nSelect gender:", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+    await edit_or_reply(query, f"📊 *Department:* {dept_name}\n\nSelect gender:", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
     return CHOOSING_ACTION
 
 async def handle_view_gender_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -869,7 +872,7 @@ async def handle_view_gender_callback(update: Update, context: ContextTypes.DEFA
     count, avg_gpa, max_gpa, min_gpa = cursor.fetchone()
 
     if count == 0:
-        await query.edit_message_text(f"⚠️ No data found.", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Back", callback_data=f"v_{dept_prefix}")]]), parse_mode="Markdown")
+        await edit_or_reply(query, f"⚠️ No data found for {gender_str} in this department.", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Back", callback_data=f"v_{dept_prefix}")]]), parse_mode="Markdown")
         conn.close()
         return CHOOSING_ACTION
 
@@ -885,9 +888,9 @@ async def handle_view_gender_callback(update: Update, context: ContextTypes.DEFA
     if len(students) <= 10:
         for i, (curr_gpa, next_gpa, dept_2) in enumerate(students, 1):
             msg += f"{i}. *{next_gpa:.2f}* (Curr: {curr_gpa:.2f}) | 2nd: {dept_2}\n"
-        await query.edit_message_text(msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+        await edit_or_reply(query, msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
     else:
-        msg += "📄 *List exceeds 10 students. Sending txt file...*"
+        msg += "📄 *List exceeds 10 students. Sending text file...*"
         full_txt = f"=== {actual_dept} ({gender_str.upper()}) ===\nRank | Exp GPA | Curr GPA | 2nd Choice\n" + "-" * 40 + "\n"
         for i, (curr_gpa, next_gpa, dept_2) in enumerate(students, 1):
             full_txt += f"{i}. {next_gpa:.2f} | (Curr: {curr_gpa:.2f}) | 2nd: {dept_2}\n"
@@ -921,13 +924,11 @@ async def admin_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return CHOOSING_ACTION
 
 async def admin_backup(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Triggers a manual database backup to the admin."""
     if update.message.from_user.id != ADMIN_ID: return
     await update.message.reply_text("⏳ Generating manual backup...")
     await send_db_backup(context, caption="📦 Manual Database Backup")
 
 async def admin_restore_db(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Restores the DB when a valid .db file is sent directly by the Admin."""
     if update.message.from_user.id != ADMIN_ID: return
     
     doc = update.message.document
@@ -1047,7 +1048,6 @@ def main():
     try: asyncio.get_event_loop()
     except RuntimeError: asyncio.set_event_loop(asyncio.new_event_loop())
 
-    # Safely retrieve token from environment variable
     BOT_TOKEN = os.environ.get("BOT_TOKEN")
     
     if not BOT_TOKEN:
@@ -1058,8 +1058,7 @@ def main():
 
     conv_handler = ConversationHandler(
         entry_points=[
-            MessageHandler(CMD_START, start),
-            CommandHandler("start", start)
+            MessageHandler(CMD_START, start)
         ],
         states={
             CHOOSING_ACTION: [
@@ -1130,30 +1129,19 @@ def main():
             MessageHandler(CMD_VIEW, view_cmd),
             MessageHandler(CMD_USERS, admin_users),
             MessageHandler(CMD_ADMIN, admin_menu),
-            CommandHandler("start", start),
-            CommandHandler("cancel", cancel_cmd),
-            CommandHandler("view", view_cmd),
-            CommandHandler("users", admin_users),
-            CommandHandler("admin", admin_menu)
         ],
     )
 
     app.add_handler(conv_handler)
-    app.add_handler(CommandHandler("view", view_cmd))
-    app.add_handler(CommandHandler("users", admin_users))
-    app.add_handler(CommandHandler("admin", admin_menu))
-    app.add_handler(CommandHandler("backup", admin_backup))  # New Manual Backup
+    app.add_handler(MessageHandler(CMD_VIEW, view_cmd))
+    app.add_handler(MessageHandler(CMD_USERS, admin_users))
+    app.add_handler(MessageHandler(CMD_ADMIN, admin_menu))
+    app.add_handler(CommandHandler("backup", admin_backup))
     app.add_handler(CommandHandler("ban", admin_ban))
     app.add_handler(CommandHandler("unban", admin_unban))
     app.add_handler(CommandHandler("broadcast", admin_broadcast))
     app.add_handler(CommandHandler("dashboard", admin_dashboard))
     app.add_handler(CommandHandler("togglebot", admin_togglebot))
-    
-    app.add_handler(MessageHandler(CMD_VIEW, view_cmd))
-    app.add_handler(MessageHandler(CMD_USERS, admin_users))
-    app.add_handler(MessageHandler(CMD_ADMIN, admin_menu))
-    
-    # New Drag-and-Drop Restore Feature
     app.add_handler(MessageHandler(filters.Document.ALL, admin_restore_db))
 
     print("✅ ASTU Placement Bot is now running...")
