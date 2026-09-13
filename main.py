@@ -440,8 +440,8 @@ async def do_register(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
             try:
                 await context.bot.send_message(
                     chat_id=ADMIN_ID,
-                    text=f"🔔 *New User Registered!*\nName: {user.first_name}\nUsername: @{user.username or 'None'}\nID: `{user.id}`",
-                    parse_mode="Markdown"
+                    text=f"<tg-emoji emoji-id=\"5458603043203327669\">🔔</tg-emoji>New User Registered!\nName: {user.first_name}\nUsername: @{user.username or 'None'}\nID: `{user.id}`",
+                    parse_mode="HTML"
                 )
             except Exception:
                 pass
@@ -492,7 +492,7 @@ async def receive_admin_msg(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     category = context.user_data.get('contact_category', 'Message')
     
     admin_text = (
-        f"📩 <b>New Message: {category}</b>\n\n"
+        f"<tg-emoji emoji-id=\"5472239203590888751\">📩</tg-emoji> <b>New Message: {category}</b>\n\n"
         f"<b>From:</b> {user.first_name} (@{user.username or 'No Username'})\n"
         f"<b>ID:</b> <code>{user.id}</code>\n\n"
         f"<b>Message:</b>\n{msg}"
@@ -558,10 +558,10 @@ async def prompt_dept2(query, context):
 async def prompt_confirm(query, context):
     summary = (
         "<tg-emoji emoji-id=\"5197269100878907942\">✍️</tg-emoji>Please Confirm Your Information\n\n"
-        f"School: {context.user_data['school']}\n"
-        f"Current GPA: {context.user_data['gpa_current']:.2f}\n"
-        f"Expected GPA: {context.user_data['gpa_next']:.2f}\n"
-        f"Gender: {context.user_data['gender']}\n"
+        f"<tg-emoji emoji-id=\"5265002646397285605\">🏫</tg-emoji>School: {context.user_data['school']}\n"
+        f"<tg-emoji emoji-id=\"5424972470023104089\">🔥</tg-emoji>Current GPA: {context.user_data['gpa_current']:.2f}\n"
+        f"<tg-emoji emoji-id=\"5276032951342088188\">💥</tg-emoji>Expected GPA: {context.user_data['gpa_next']:.2f}\n"
+        f"<tg-emoji emoji-id=\"5292122921035133343\">🚹</tg-emoji>Gender: {context.user_data['gender']}\n"
         f"<tg-emoji emoji-id=\"5440539497383087970\">🥇</tg-emoji>1st Choice: {context.user_data['dept_first']}\n"
         f"<tg-emoji emoji-id=\"5447203607294265305\">🥈</tg-emoji>2nd Choice: {context.user_data['dept_second']}\n\n"
         "Is this correct?"
@@ -641,10 +641,10 @@ async def action_mydata(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     else:
         text = (
             "<tg-emoji emoji-id=\"5197269100878907942\">✍️</tg-emoji>Your Submitted Data\n\n"
-            f"School: {res[0]}\n"
-            f"Current GPA: {res[1]:.2f}\n"
-            f"Expected GPA: {res[2]:.2f}\n"
-            f"Gender: {res[3]}\n"
+            f"<tg-emoji emoji-id=\"5265002646397285605\">🏫</tg-emoji>School: {res[0]}\n"
+            f"tg-emoji emoji-id=\"5424972470023104089\">🔥</tg-emoji>Current GPA: {res[1]:.2f}\n"
+            f"<tg-emoji emoji-id=\"5276032951342088188\">💥</tg-emoji>Expected GPA: {res[2]:.2f}\n"
+            f"<tg-emoji emoji-id=\"5292122921035133343\">🚹</tg-emoji>Gender: {res[3]}\n"
             f"<tg-emoji emoji-id=\"5440539497383087970\">🥇</tg-emoji>1st Choice: {res[4]}\n"
             f"<tg-emoji emoji-id=\"5447203607294265305\">🥈</tg-emoji>2nd Choice: {res[5]}\n"
             f"Last Updated: {res[6]}\n\n"
@@ -763,7 +763,7 @@ async def confirm_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     await send_db_backup(context, caption=f"📦 Auto-Backup: New Submission by Hash {user_hash[:8]}")
 
     keyboard = [[InlineKeyboardButton("Back to Main Menu", callback_data="back_menu")]]
-    await edit_or_reply(query, "✅ *Data saved successfully!*\n\nYour details have been updated anonymously.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+    await edit_or_reply(query, "<tg-emoji emoji-id=\"5206607081334906820\">✔️</tg-emoji>Data saved successfully!\n\nYour details have been updated anonymously.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
     return CHOOSING_ACTION
 
 async def back_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -832,7 +832,7 @@ async def view_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user_id = update.message.from_user.id
     if not await check_access_and_respond(update.message, context, user_id): return CHOOSING_ACTION
     if not is_user_registered(user_id):
-        await update.message.reply_text("⚠️ *Registration Required*", parse_mode="Markdown")
+        await update.message.reply_text("<tg-emoji emoji-id=\"5420323339723881652\">⚠️</tg-emoji>Registration Required*", parse_mode="HTML")
         return CHOOSING_ACTION
     await show_batch_menu(update.message)
     return CHOOSING_ACTION
@@ -872,7 +872,7 @@ async def handle_view_gender_callback(update: Update, context: ContextTypes.DEFA
     count, avg_gpa, max_gpa, min_gpa = cursor.fetchone()
 
     if count == 0:
-        await edit_or_reply(query, f"⚠️ No data found for {gender_str} in this department.", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Back", callback_data=f"v_{dept_prefix}")]]), parse_mode="Markdown")
+        await edit_or_reply(query, f"<tg-emoji emoji-id=\"5420323339723881652\">⚠️</tg-emoji>No data found for {gender_str} in this department.", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Back", callback_data=f"v_{dept_prefix}")]]), parse_mode="HTML")
         conn.close()
         return CHOOSING_ACTION
 
