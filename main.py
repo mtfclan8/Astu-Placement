@@ -642,7 +642,7 @@ async def action_mydata(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
         text = (
             "<tg-emoji emoji-id=\"5197269100878907942\">✍️</tg-emoji>Your Submitted Data\n\n"
             f"<tg-emoji emoji-id=\"5265002646397285605\">🏫</tg-emoji>School: {res[0]}\n"
-            f"tg-emoji emoji-id=\"5424972470023104089\">🔥</tg-emoji>Current GPA: {res[1]:.2f}\n"
+            f"<tg-emoji emoji-id=\"5424972470023104089\">🔥</tg-emoji>Current GPA: {res[1]:.2f}\n"
             f"<tg-emoji emoji-id=\"5276032951342088188\">💥</tg-emoji>Expected GPA: {res[2]:.2f}\n"
             f"<tg-emoji emoji-id=\"5292122921035133343\">🚹</tg-emoji>Gender: {res[3]}\n"
             f"<tg-emoji emoji-id=\"5440539497383087970\">🥇</tg-emoji>1st Choice: {res[4]}\n"
@@ -659,7 +659,7 @@ async def show_batch_menu(msg_obj):
         [InlineKeyboardButton("2020 Batch", callback_data="batch_2020")],
         [InlineKeyboardButton("Back to Main Menu", callback_data="back_menu")]
     ]
-    text = "<tg-emoji emoji-id=\"5938195768832692153\">🎓</tg-emoji>Select Batch Year:*\n\nPlease select which batch placement data you would like to view:"
+    text = "<tg-emoji emoji-id=\"5938195768832692153\">🎓</tg-emoji>Select Batch Year:\n\nPlease select which batch placement data you would like to view:"
     await edit_or_reply(msg_obj, text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
 
 async def action_view(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
