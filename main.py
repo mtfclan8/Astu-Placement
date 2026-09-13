@@ -326,14 +326,14 @@ async def check_astu_student(full_name: str):
 async def prompt_verify_name(update_or_query, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [[InlineKeyboardButton("Cancel", callback_data="cancel")]]
     text = (
-        "<tg-emoji emoji-id=\"5938195768832692153\">🎓</tg-emoji> *ASTU Student Verification*\n\n"
+        "<tg-emoji emoji-id=\"5938195768832692153\">🎓</tg-emoji> ASTU Student Verification\n\n"
         "To ensure placement stats remain accurate and genuine, we verify that every participant "
         "is an unplaced ASTU student against the official university portal.\n\n"
-        "<tg-emoji emoji-id=\"5251203410396458957\">🛡</tg-emoji> *Why share your full name?*\n"
-        "• **100% Anonymous:** Your name is **ONLY** used to confirm your student status.\n"
-        "• **Privacy Guaranteed:** Your name is **NEVER** stored with your choice submissions or shared with anyone.\n"
-        "• **Fair Statistics:** Prevents non-ASTU users or multiple fake submissions from skewing placement stats.\n\n"
-        "Please enter your *full name* exactly as registered in the ASTU portal:"
+        "<tg-emoji emoji-id=\"5251203410396458957\">🛡</tg-emoji> Why share your full name?\n"
+        "<tg-emoji emoji-id=\"5440539497383087970\">🥇</tg-emoji>100% Anonymous: Your name is ONLY used to confirm your student status.\n"
+        "<tg-emoji emoji-id=\"5447203607294265305\">🥈</tg-emoji>Privacy Guaranteed: Your name is NEVER stored with your choice submissions or shared with anyone.\n"
+        "<tg-emoji emoji-id=\"5453902265922376865\">🥉</tg-emoji>Fair Statistics: Prevents non-ASTU users or multiple fake submissions from skewing placement stats.\n\n"
+        "Please enter your full name exactly as registered in the ASTU portal:"
     )
     await edit_or_reply(update_or_query, text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
     return VERIFY_NAME
