@@ -557,7 +557,7 @@ async def prompt_dept2(query, context):
 
 async def prompt_confirm(query, context):
     summary = (
-        "<tg-emoji emoji-id="5197269100878907942">✍️</tg-emoji>Please Confirm Your Information\n\n"
+        "<tg-emoji emoji-id=\"5197269100878907942\">✍️</tg-emoji>Please Confirm Your Information\n\n"
         f"School: {context.user_data['school']}\n"
         f"Current GPA: {context.user_data['gpa_current']:.2f}\n"
         f"Expected GPA: {context.user_data['gpa_next']:.2f}\n"
