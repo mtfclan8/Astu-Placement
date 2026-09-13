@@ -353,8 +353,8 @@ async def handle_verify_name_input(update: Update, context: ContextTypes.DEFAULT
         await wait_msg.edit_text("❌ *Verification Failed*\nWe could not find your record on ASTU portal. Please double check the spelling and try again.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
         return CHOOSING_ACTION
     elif status == "WRONG_YEAR":
-        keyboard = [[InlineKeyboardButton("🏠 Main Menu", callback_data="back_menu")]]
-        await wait_msg.edit_text(f"⛔ *Ineligible Batch*\nFound admission year: *{detail}*. Only unplaced fresh batch students are eligible.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+        keyboard = [[InlineKeyboardButton("Main Menu", callback_data="back_menu")]]
+        await wait_msg.edit_text(f"<tg-emoji emoji-id=\"5240241223632954241\">🚫</tg-emoji> Ineligible Batch\nFound admission year: {detail} Only unplaced fresh batch students are eligible.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
         return CHOOSING_ACTION
     elif status == "VERIFIED_ELIGIBLE":
         user_id = update.effective_user.id
