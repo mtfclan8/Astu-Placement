@@ -825,8 +825,8 @@ async def show_view_stats(msg_obj):
     keyboard = [[InlineKeyboardButton(d[0], callback_data=f"v_{d[0][:30]}")] for d in departments]
     keyboard.append([InlineKeyboardButton("Back", callback_data="action_view"), InlineKeyboardButton("Main Menu", callback_data="back_menu")])
 
-    text = (f"📊 *ASTU Placement Statistics (2018 Batch)*\nTotal Anonymized Submissions: {total_count}\n\nSelect a department:")
-    await edit_or_reply(msg_obj, text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+    text = (f"<tg-emoji emoji-id=\"5231200819986047254\">📊</tg-emoji>ASTU Placement Statistics (2018 Batch)\n<tg-emoji emoji-id=\"5397782960512444700\">📌</tg-emoji>Total Anonymized Submissions: {total_count}\n\n<tg-emoji emoji-id=\"5210956306952758910\">👀</tg-emoji>Select a department:")
+    await edit_or_reply(msg_obj, text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
 
 async def view_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user_id = update.message.from_user.id
@@ -847,7 +847,7 @@ async def handle_view_callback(update: Update, context: ContextTypes.DEFAULT_TYP
         [InlineKeyboardButton("👩 Female Statistics", callback_data=f"vg_F_{dept_name[:30]}")],
         [InlineKeyboardButton("🔙 Back", callback_data="batch_2018")]
     ]
-    await edit_or_reply(query, f"📊 *Department:* {dept_name}\n\nSelect gender:", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+    await edit_or_reply(query, f"<tg-emoji emoji-id=\"5231200819986047254\">📊</tg-emoji> Department: {dept_name}\n\n<tg-emoji emoji-id=\"5292122921035133343\">🚹</tg-emoji>Select gender:", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
     return CHOOSING_ACTION
 
 async def handle_view_gender_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
