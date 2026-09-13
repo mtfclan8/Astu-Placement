@@ -333,7 +333,7 @@ async def prompt_verify_name(update_or_query, context: ContextTypes.DEFAULT_TYPE
         "<tg-emoji emoji-id=\"5440539497383087970\">🥇</tg-emoji>100% Anonymous: Your name is ONLY used to confirm your student status.\n"
         "<tg-emoji emoji-id=\"5447203607294265305\">🥈</tg-emoji>Privacy Guaranteed: Your name is NEVER stored with your choice submissions or shared with anyone.\n"
         "<tg-emoji emoji-id=\"5453902265922376865\">🥉</tg-emoji>Fair Statistics: Prevents non-ASTU users or multiple fake submissions from skewing placement stats.\n\n"
-        "Please enter your full name exactly as registered in the ASTU portal:"
+        "Please enter your full name exactly as registered in ASTU:"
     )
     await edit_or_reply(update_or_query, text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
     return VERIFY_NAME
@@ -883,7 +883,7 @@ async def handle_view_gender_callback(update: Update, context: ContextTypes.DEFA
     conn.close()
 
     keyboard = [[InlineKeyboardButton("🔙 Back", callback_data=f"v_{actual_dept[:30]}")]]
-    msg = f"📊 *Department: {actual_dept}*\n🚻 *Gender:* {gender_str}\n• *Total:* {count}\n• *High/Low/Avg:* {max_gpa:.2f} / {min_gpa:.2f} / {avg_gpa:.2f}\n\n"
+    msg = f"<tg-emoji emoji-id=\"5231200819986047254\">📊</tg-emoji> *Department: {actual_dept}*\n<tg-emoji emoji-id=\"5292122921035133343\">🚹</tg-emoji> *Gender:* {gender_str}\n• *Total:* {count}\n• *High/Low/Avg:* {max_gpa:.2f} / {min_gpa:.2f} / {avg_gpa:.2f}\n\n"
 
     if len(students) <= 10:
         for i, (curr_gpa, next_gpa, dept_2) in enumerate(students, 1):
