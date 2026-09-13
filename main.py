@@ -217,7 +217,7 @@ async def check_access_and_respond(msg_obj, context: ContextTypes.DEFAULT_TYPE, 
             [InlineKeyboardButton("📢 Join Channel", url="https://t.me/astuplacement")],
             [InlineKeyboardButton("✅ Verify Membership", callback_data="verify_sub")]
         ]
-        text = "![⚠️](tg://emoji?id=5420323339723881652) *Access Restricted*\n\nYou must join our channel to use this bot!"
+        text = "⚠️*Access Restricted*\n\nYou must join our channel to use this bot!"
         markup = InlineKeyboardMarkup(keyboard)
         await edit_or_reply(msg_obj, text, reply_markup=markup, parse_mode="Markdown")
         return False
@@ -401,7 +401,7 @@ async def show_main_menu(update_or_msg, user, is_edit=False):
         verified_str = " (Verified Fresh Student)" if is_user_verified(uid) else ""
         status_str = f"✅ Registered{verified_str}"
         text = (
-            f"<blockquote>👋 Welcome, {profile_link}!\n🆔 <b>Your ID:</b> <code>{uid}</code>\n📌 <b>Status:</b> {status_str}</blockquote>\n\n"
+            f"<blockquote><tg-emoji emoji-id="5461117441612462242">🙂</tg-emoji> Welcome, {profile_link}!\n🆔 <b>Your ID:</b> <code>{uid}</code>\n📌 <b>Status:</b> {status_str}</blockquote>\n\n"
             "🎓 <b>ASTU Anonymous Department Placement Collector</b>\n\n🔒 <b>Privacy Protected:</b> Your submitted placement stats are completely anonymized."
         )
         fill_update_btn = "Update Info" if has_user_submitted(uid) else "Fill Info"
