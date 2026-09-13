@@ -888,7 +888,7 @@ async def handle_view_gender_callback(update: Update, context: ContextTypes.DEFA
     if len(students) <= 10:
         for i, (curr_gpa, next_gpa, dept_2) in enumerate(students, 1):
             msg += f"{i}. *{next_gpa:.2f}* (Curr: {curr_gpa:.2f}) | 2nd: {dept_2}\n"
-        await edit_or_reply(query, msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+        await edit_or_reply(query, msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
     else:
         msg += "📄 *List exceeds 10 students. Sending text file...*"
         full_txt = f"=== {actual_dept} ({gender_str.upper()}) ===\nRank | Exp GPA | Curr GPA | 2nd Choice\n" + "-" * 40 + "\n"
@@ -899,7 +899,7 @@ async def handle_view_gender_callback(update: Update, context: ContextTypes.DEFA
         bio.name = f"{actual_dept.replace(' ', '_')}_{gender_str}_TopList.txt"
         
         await query.message.delete()
-        await context.bot.send_document(chat_id=query.message.chat_id, document=bio, caption=msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+        await context.bot.send_document(chat_id=query.message.chat_id, document=bio, caption=msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
     return CHOOSING_ACTION
 
 # -----------------------------------------
