@@ -326,10 +326,10 @@ async def check_astu_student(full_name: str):
 async def prompt_verify_name(update_or_query, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [[InlineKeyboardButton("Cancel", callback_data="cancel")]]
     text = (
-        "🎓 *ASTU Student Verification*\n\n"
+        "<tg-emoji emoji-id=\"5938195768832692153\">🎓</tg-emoji> *ASTU Student Verification*\n\n"
         "To ensure placement stats remain accurate and genuine, we verify that every participant "
         "is an unplaced ASTU student against the official university portal.\n\n"
-        "🔒 *Why share your full name?*\n"
+        "<tg-emoji emoji-id=\"5251203410396458957\">🛡</tg-emoji> *Why share your full name?*\n"
         "• **100% Anonymous:** Your name is **ONLY** used to confirm your student status.\n"
         "• **Privacy Guaranteed:** Your name is **NEVER** stored with your choice submissions or shared with anyone.\n"
         "• **Fair Statistics:** Prevents non-ASTU users or multiple fake submissions from skewing placement stats.\n\n"
@@ -340,7 +340,7 @@ async def prompt_verify_name(update_or_query, context: ContextTypes.DEFAULT_TYPE
 
 async def handle_verify_name_input(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     name_input = update.message.text.strip()
-    wait_msg = await update.message.reply_text("<tg-emoji emoji-id=\"5456140674028019486\">⚡️</tg-emoji> Verifying that you’re an ASTU student… Please wait.")
+    wait_msg = await update.message.reply_text("⚡️ Verifying that you’re an ASTU student… Please wait.")
     
     status, detail = await check_astu_student(name_input)
     
@@ -402,7 +402,7 @@ async def show_main_menu(update_or_msg, user, is_edit=False):
         status_str = f"<tg-emoji emoji-id=\"5206607081334906820\">✔️</tg-emoji> Registered{verified_str}"
         text = (
             f"<blockquote><tg-emoji emoji-id=\"5461117441612462242\">🙂</tg-emoji> Welcome, {profile_link}!\n<tg-emoji emoji-id=\"5841276284155467413\">🔤</tg-emoji> <b>Your ID:</b> <code>{uid}</code>\n<tg-emoji emoji-id=\"5397782960512444700\">📌</tg-emoji> <b>Status:</b> {status_str}</blockquote>\n\n"
-            "<tg-emoji emoji-id=\"5938195768832692153\">🎓</tg-emoji> <b>ASTU Anonymous Department Placement Collector</b>\n\n🔒 <b>Privacy Protected:</b> Your submitted placement stats are completely anonymized."
+            "<tg-emoji emoji-id=\"5938195768832692153\">🎓</tg-emoji> <b>ASTU Anonymous Department Placement Collector</b>\n\n<tg-emoji emoji-id=\"5251203410396458957\">🛡</tg-emoji> <b>Privacy Protected:</b> Your submitted placement stats are completely anonymized."
         )
         fill_update_btn = "Update Info" if has_user_submitted(uid) else "Fill Info"
         keyboard = [
