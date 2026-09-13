@@ -217,7 +217,7 @@ async def check_access_and_respond(msg_obj, context: ContextTypes.DEFAULT_TYPE, 
             [InlineKeyboardButton("📢 Join Channel", url="https://t.me/astuplacement")],
             [InlineKeyboardButton("✅ Verify Membership", callback_data="verify_sub")]
         ]
-        text = "<tg-emoji emoji-id=\"5420323339723881652\">⚠️</tg-emoji> *Access Restricted*\n\nYou must join our channel to use this bot!"
+        text = "![⚠️](tg://emoji?id=5420323339723881652) *Access Restricted*\n\nYou must join our channel to use this bot!"
         markup = InlineKeyboardMarkup(keyboard)
         await edit_or_reply(msg_obj, text, reply_markup=markup, parse_mode="Markdown")
         return False
