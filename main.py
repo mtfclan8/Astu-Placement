@@ -391,18 +391,18 @@ async def show_main_menu(update_or_msg, user, is_edit=False):
     registered = is_user_registered(uid)
     
     if not registered:
-        status_str = "⚠️ Not Registered (Please Register First)"
+        status_str = "<tg-emoji emoji-id=\"5420323339723881652\">⚠️</tg-emoji> Not Registered (Please Register First)"
         text = (
             f"<blockquote><tg-emoji emoji-id=\"5461117441612462242\">🙂</tg-emoji> Welcome, {profile_link}!\n<tg-emoji emoji-id=\"5841276284155467413\">🔤</tg-emoji> <b>Your ID:</b> <code>{uid}</code>\n<tg-emoji emoji-id=\"5397782960512444700\">📌</tg-emoji> <b>Status:</b> {status_str}</blockquote>\n\n"
-            "🎓 <b>ASTU Anonymous Department Placement Collector</b>\n\nYou must register to use this bot."
+            "<tg-emoji emoji-id=\"5938195768832692153\">🎓</tg-emoji> <b>ASTU Anonymous Department Placement Collector</b>\n\nYou must register to use this bot."
         )
-        keyboard = [[InlineKeyboardButton("![✔️](tg://emoji?id=5206607081334906820) Register", callback_data="do_register")]]
+        keyboard = [[InlineKeyboardButton("✅ Register", callback_data="do_register")]]
     else:
         verified_str = " (Verified Fresh Student)" if is_user_verified(uid) else ""
-        status_str = f"✅ Registered{verified_str}"
+        status_str = f"<tg-emoji emoji-id=\"5206607081334906820\">✔️</tg-emoji> Registered{verified_str}"
         text = (
-            f"<blockquote><tg-emoji emoji-id=\"5461117441612462242\">🙂</tg-emoji> Welcome, {profile_link}!\n🆔 <b>Your ID:</b> <code>{uid}</code>\n📌 <b>Status:</b> {status_str}</blockquote>\n\n"
-            "🎓 <b>ASTU Anonymous Department Placement Collector</b>\n\n🔒 <b>Privacy Protected:</b> Your submitted placement stats are completely anonymized."
+            f"<blockquote><tg-emoji emoji-id=\"5461117441612462242\">🙂</tg-emoji> Welcome, {profile_link}!\n<tg-emoji emoji-id=\"5841276284155467413\">🔤</tg-emoji> <b>Your ID:</b> <code>{uid}</code>\n<tg-emoji emoji-id=\"5397782960512444700\">📌</tg-emoji> <b>Status:</b> {status_str}</blockquote>\n\n"
+            "<tg-emoji emoji-id=\"5938195768832692153\">🎓</tg-emoji> <b>ASTU Anonymous Department Placement Collector</b>\n\n🔒 <b>Privacy Protected:</b> Your submitted placement stats are completely anonymized."
         )
         fill_update_btn = "Update Info" if has_user_submitted(uid) else "Fill Info"
         keyboard = [
