@@ -196,8 +196,8 @@ async def check_access_and_respond(msg_obj, context: ContextTypes.DEFAULT_TYPE, 
     global BOT_ACTIVE
     
     if not BOT_ACTIVE and user_id != ADMIN_ID:
-        text = "🔴 *Maintenance Mode*\n\nThe bot is currently inactive. Please try again later."
-        await edit_or_reply(msg_obj, text, parse_mode="Markdown")
+        text = "<tg-emoji emoji-id=\"5411225014148014586\">🔴</tg-emoji>Maintenance Mode\n\nThe bot is currently inactive. Please try again later."
+        await edit_or_reply(msg_obj, text, parse_mode="HTML")
         return False
         
     conn = sqlite3.connect("astu_placement.db")
@@ -346,11 +346,11 @@ async def handle_verify_name_input(update: Update, context: ContextTypes.DEFAULT
     
     if status == "ERROR":
         keyboard = [[InlineKeyboardButton("🔄 Try Again", callback_data="action_register")], [InlineKeyboardButton("Cancel", callback_data="cancel")]]
-        await wait_msg.edit_text("⚠️ *Service Unavailable*\nCould not connect to ASTU portal. Please try again later.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+        await wait_msg.edit_text("<tg-emoji emoji-id=\"5447644880824181073\">⚠️</tg-emoji> Service Unavailable\nCould not connect to ASTU portal. Please try again later.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
         return CHOOSING_ACTION
     elif status == "NOT_FOUND":
         keyboard = [[InlineKeyboardButton("🔄 Try Again", callback_data="action_register")], [InlineKeyboardButton("Cancel", callback_data="cancel")]]
-        await wait_msg.edit_text("❌ *Verification Failed*\nWe could not find your record on ASTU portal. Please double check the spelling and try again.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+        await wait_msg.edit_text("<tg-emoji emoji-id=\"5210952531676504517\">❌</tg-emoji>Verification Failed*\nWe could not find your record on ASTU portal. Please double check the spelling and try again.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
         return CHOOSING_ACTION
     elif status == "WRONG_YEAR":
         keyboard = [[InlineKeyboardButton("Main Menu", callback_data="back_menu")]]
@@ -371,11 +371,11 @@ async def handle_verify_name_input(update: Update, context: ContextTypes.DEFAULT
         
         if detected_school and detected_school in SCHOOL_DEPARTMENTS:
             context.user_data["school"] = detected_school
-            await wait_msg.edit_text(f"✅ *Verified Student*\n🏫 Detected School: {detected_school}\n\nProceeding to GPA entry...", parse_mode="Markdown")
+            await wait_msg.edit_text(f"<tg-emoji emoji-id=\"5938241656263282661\">✅</tg-emoji>Verified Student\n<tg-emoji emoji-id=\"5265002646397285605\">🏫</tg-emoji> School: {detected_school}\n\nProceeding to GPA entry...", parse_mode="HTML")
             await asyncio.sleep(1)
             return await prompt_gpa_current(wait_msg, context)
         else:
-            await wait_msg.edit_text("✅ *Verified Student*\nPlease continue with your choices.", parse_mode="Markdown")
+            await wait_msg.edit_text("<tg-emoji emoji-id=\"5938241656263282661\">✅</tg-emoji>Verified Student\nPlease continue with your choices.", parse_mode="HTML")
             await asyncio.sleep(1)
             return await prompt_school(wait_msg, context)
 
@@ -480,7 +480,7 @@ async def handle_contact_choice(update: Update, context: ContextTypes.DEFAULT_TY
     
     await edit_or_reply(
         query,
-        f"📩 <b>{mapping[query.data]}</b>\n\nPlease type your message below.",
+        f"<tg-emoji emoji-id=\"5472239203590888751\">📩</tg-emoji> <b>{mapping[query.data]}</b>\n\nPlease type your message below.",
         reply_markup=InlineKeyboardMarkup(keyboard),
         parse_mode="HTML"
     )
@@ -519,8 +519,8 @@ async def prompt_school(query_or_msg, context):
 
 async def prompt_gpa_current(msg_obj, context):
     keyboard = [[InlineKeyboardButton("Back", callback_data="back_school"), InlineKeyboardButton("Cancel", callback_data="cancel")]]
-    text = f"🏫 *School:* {context.user_data.get('school')}\n\n*Step 2: Enter your CURRENT semester GPA*\n(1.50 - 4.00):"
-    await edit_or_reply(msg_obj, text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+    text = f"<tg-emoji emoji-id=\"5265002646397285605\">🏫</tg-emoji>School: {context.user_data.get('school')}\n\nStep 2: Enter your CURRENT semester GPA\n(1.50 - 4.00):"
+    await edit_or_reply(msg_obj, text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
     return GPA_CURRENT
 
 async def prompt_gpa_next(msg_obj, context):
@@ -552,25 +552,25 @@ async def prompt_dept2(query, context):
     remaining_depts = [d for d in SCHOOL_DEPARTMENTS[school] if d != dept_1]
     keyboard = [[InlineKeyboardButton(d, callback_data=f"d2_{d}")] for d in remaining_depts]
     keyboard.append([InlineKeyboardButton("Back", callback_data="back_dept1"), InlineKeyboardButton("Cancel", callback_data="cancel")])
-    await edit_or_reply(query, f"🥇 *1st Choice:* {dept_1}\n\n*Step 6: Select your 2nd Choice Department:*", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+    await edit_or_reply(query, f"<tg-emoji emoji-id=\"5440539497383087970\">🥇</tg-emoji>1st Choice: {dept_1}\n\n*Step 6: Select your 2nd Choice Department:", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
     return DEPT_2
 
 async def prompt_confirm(query, context):
     summary = (
-        "📋 *Please Confirm Your Information*\n\n"
-        f"• *School:* {context.user_data['school']}\n"
-        f"• *Current GPA:* {context.user_data['gpa_current']:.2f}\n"
-        f"• *Expected GPA:* {context.user_data['gpa_next']:.2f}\n"
-        f"• *Gender:* {context.user_data['gender']}\n"
-        f"• *1st Choice:* {context.user_data['dept_first']}\n"
-        f"• *2nd Choice:* {context.user_data['dept_second']}\n\n"
+        "<tg-emoji emoji-id="5197269100878907942">✍️</tg-emoji>Please Confirm Your Information\n\n"
+        f"School: {context.user_data['school']}\n"
+        f"Current GPA: {context.user_data['gpa_current']:.2f}\n"
+        f"Expected GPA: {context.user_data['gpa_next']:.2f}\n"
+        f"Gender: {context.user_data['gender']}\n"
+        f"<tg-emoji emoji-id=\"5440539497383087970\">🥇</tg-emoji>1st Choice: {context.user_data['dept_first']}\n"
+        f"<tg-emoji emoji-id=\"5447203607294265305\">🥈</tg-emoji>2nd Choice: {context.user_data['dept_second']}\n\n"
         "Is this correct?"
     )
     keyboard = [
         [InlineKeyboardButton("Confirm & Save", callback_data="cfm_save")],
         [InlineKeyboardButton("Back", callback_data="back_dept2"), InlineKeyboardButton("Cancel", callback_data="cancel")]
     ]
-    await edit_or_reply(query, summary, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+    await edit_or_reply(query, summary, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
     return CONFIRM
 
 # -----------------------------------------
@@ -637,19 +637,19 @@ async def action_mydata(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     keyboard = [[InlineKeyboardButton("Back to Main Menu", callback_data="back_menu")]]
     
     if not res:
-        text = "ℹ️ *No Submission Found*\n\nYou have not submitted any placement data yet."
+        text = "<tg-emoji emoji-id="5334544901428229844">ℹ️</tg-emoji>No Submission Found\n\nYou have not submitted any placement data yet."
     else:
         text = (
-            "📋 *Your Submitted Data*\n\n"
-            f"• *School:* {res[0]}\n"
-            f"• *Current GPA:* {res[1]:.2f}\n"
-            f"• *Expected GPA:* {res[2]:.2f}\n"
-            f"• *Gender:* {res[3]}\n"
-            f"• *1st Choice:* {res[4]}\n"
-            f"• *2nd Choice:* {res[5]}\n"
-            f"• *Last Updated:* {res[6]}\n\n"
+            "<tg-emoji emoji-id="5197269100878907942">✍️</tg-emoji>Your Submitted Data\n\n"
+            f"School: {res[0]}\n"
+            f"Current GPA: {res[1]:.2f}\n"
+            f"Expected GPA: {res[2]:.2f}\n"
+            f"Gender: {res[3]}\n"
+            f"<tg-emoji emoji-id=\"5440539497383087970\">🥇</tg-emoji>1st Choice: {res[4]}\n"
+            f"<tg-emoji emoji-id=\"5447203607294265305\">🥈</tg-emoji>2nd Choice: {res[5]}\n"
+            f"Last Updated: {res[6]}\n\n"
         )
-    await edit_or_reply(query, text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+    await edit_or_reply(query, text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
     return CHOOSING_ACTION
 
 async def show_batch_menu(msg_obj):
