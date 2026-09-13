@@ -640,7 +640,7 @@ async def action_mydata(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
         text = "<tg-emoji emoji-id="5334544901428229844">ℹ️</tg-emoji>No Submission Found\n\nYou have not submitted any placement data yet."
     else:
         text = (
-            "<tg-emoji emoji-id="5197269100878907942">✍️</tg-emoji>Your Submitted Data\n\n"
+            "<tg-emoji emoji-id=\"5197269100878907942"\>✍️</tg-emoji>Your Submitted Data\n\n"
             f"School: {res[0]}\n"
             f"Current GPA: {res[1]:.2f}\n"
             f"Expected GPA: {res[2]:.2f}\n"
