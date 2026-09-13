@@ -335,7 +335,7 @@ async def prompt_verify_name(update_or_query, context: ContextTypes.DEFAULT_TYPE
         "• **Fair Statistics:** Prevents non-ASTU users or multiple fake submissions from skewing placement stats.\n\n"
         "Please enter your *full name* exactly as registered in the ASTU portal:"
     )
-    await edit_or_reply(update_or_query, text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+    await edit_or_reply(update_or_query, text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
     return VERIFY_NAME
 
 async def handle_verify_name_input(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
