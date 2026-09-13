@@ -883,11 +883,11 @@ async def handle_view_gender_callback(update: Update, context: ContextTypes.DEFA
     conn.close()
 
     keyboard = [[InlineKeyboardButton("🔙 Back", callback_data=f"v_{actual_dept[:30]}")]]
-    msg = f"<tg-emoji emoji-id=\"5231200819986047254\">📊</tg-emoji> *Department: {actual_dept}*\n<tg-emoji emoji-id=\"5292122921035133343\">🚹</tg-emoji> *Gender:* {gender_str}\n• *Total:* {count}\n• *High/Low/Avg:* {max_gpa:.2f} / {min_gpa:.2f} / {avg_gpa:.2f}\n\n"
+    msg = f"<tg-emoji emoji-id=\"5231200819986047254\">📊</tg-emoji> Department: {actual_dept}\n<tg-emoji emoji-id=\"5292122921035133343\">🚹</tg-emoji> Gender: {gender_str}\n<tg-emoji emoji-id=\"5397916757333654639\">➕</tg-emoji>Total: {count}\n<tg-emoji emoji-id=\"5415655814079723871\">🔝</tg-emoji>High/Low/Avg: {max_gpa:.2f} / {min_gpa:.2f} / {avg_gpa:.2f}\n\n"
 
     if len(students) <= 10:
         for i, (curr_gpa, next_gpa, dept_2) in enumerate(students, 1):
-            msg += f"{i}. *{next_gpa:.2f}* (Curr: {curr_gpa:.2f}) | 2nd: {dept_2}\n"
+            msg += f"{i}. {next_gpa:.2f} (Curr: {curr_gpa:.2f}) | 2nd: {dept_2}\n"
         await edit_or_reply(query, msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
     else:
         msg += "📄 *List exceeds 10 students. Sending text file...*"
