@@ -340,7 +340,7 @@ async def prompt_verify_name(update_or_query, context: ContextTypes.DEFAULT_TYPE
 
 async def handle_verify_name_input(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     name_input = update.message.text.strip()
-    wait_msg = await update.message.reply_text("✨ Verifying that you’re an ASTU student… Please wait.")
+    wait_msg = await update.message.reply_text("<tg-emoji emoji-id=\"5456140674028019486\">⚡️</tg-emoji> Verifying that you’re an ASTU student… Please wait.")
     
     status, detail = await check_astu_student(name_input)
     
