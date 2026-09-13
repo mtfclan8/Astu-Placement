@@ -552,7 +552,7 @@ async def prompt_dept2(query, context):
     remaining_depts = [d for d in SCHOOL_DEPARTMENTS[school] if d != dept_1]
     keyboard = [[InlineKeyboardButton(d, callback_data=f"d2_{d}")] for d in remaining_depts]
     keyboard.append([InlineKeyboardButton("Back", callback_data="back_dept1"), InlineKeyboardButton("Cancel", callback_data="cancel")])
-    await edit_or_reply(query, f"<tg-emoji emoji-id=\"5440539497383087970\">🥇</tg-emoji>1st Choice: {dept_1}\n\n*Step 6: Select your 2nd Choice Department:", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
+    await edit_or_reply(query, f"<tg-emoji emoji-id=\"5440539497383087970\">🥇</tg-emoji>1st Choice: {dept_1}\n\nStep 6: Select your 2nd Choice Department:", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
     return DEPT_2
 
 async def prompt_confirm(query, context):
@@ -659,8 +659,8 @@ async def show_batch_menu(msg_obj):
         [InlineKeyboardButton("2020 Batch", callback_data="batch_2020")],
         [InlineKeyboardButton("Back to Main Menu", callback_data="back_menu")]
     ]
-    text = "🎓 *Select Batch Year:*\n\nPlease select which batch placement data you would like to view:"
-    await edit_or_reply(msg_obj, text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="Markdown")
+    text = "<tg-emoji emoji-id=\"5938195768832692153\">🎓</tg-emoji>Select Batch Year:*\n\nPlease select which batch placement data you would like to view:"
+    await edit_or_reply(msg_obj, text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
 
 async def action_view(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
