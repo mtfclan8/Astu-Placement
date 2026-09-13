@@ -393,7 +393,7 @@ async def show_main_menu(update_or_msg, user, is_edit=False):
     if not registered:
         status_str = "⚠️ Not Registered (Please Register First)"
         text = (
-            f"<blockquote>👋 Welcome, {profile_link}!\n🆔 <b>Your ID:</b> <code>{uid}</code>\n📌 <b>Status:</b> {status_str}</blockquote>\n\n"
+            f"<blockquote><tg-emoji emoji-id=\"5461117441612462242\">🙂</tg-emoji> Welcome, {profile_link}!\n🆔 <b>Your ID:</b> <code>{uid}</code>\n📌 <b>Status:</b> {status_str}</blockquote>\n\n"
             "🎓 <b>ASTU Anonymous Department Placement Collector</b>\n\nYou must register to use this bot."
         )
         keyboard = [[InlineKeyboardButton("✅ Register", callback_data="do_register")]]
