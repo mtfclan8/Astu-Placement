@@ -654,10 +654,10 @@ async def action_mydata(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
 
 async def show_batch_menu(msg_obj):
     keyboard = [
-        [InlineKeyboardButton("2018 Batch", callback_data="batch_2018", style="success")],
+        [InlineKeyboardButton("2018 Batch", callback_data="batch_2018")],
         [InlineKeyboardButton("2019 Batch", callback_data="batch_2019")],
         [InlineKeyboardButton("2020 Batch", callback_data="batch_2020")],
-        [InlineKeyboardButton("Back to Main Menu", callback_data="back_menu")]
+        [InlineKeyboardButton("Back", callback_data="back_menu")]
     ]
     text = "<tg-emoji emoji-id=\"5938195768832692153\">🎓</tg-emoji>Select Batch Year:\n\nPlease select which batch placement data you would like to view:"
     await edit_or_reply(msg_obj, text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
