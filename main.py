@@ -461,7 +461,7 @@ async def action_contact(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         [InlineKeyboardButton("Request Update", callback_data="contact_req_update")],
         [InlineKeyboardButton("Report Problem", callback_data="contact_rep_prob")],
         [InlineKeyboardButton("Feedback", callback_data="contact_feedback")],
-        [InlineKeyboardButton("Back to Main Menu", callback_data="back_menu")]
+        [InlineKeyboardButton("Back", callback_data="back_menu")]
     ]
     await edit_or_reply(
         query,
@@ -634,7 +634,7 @@ async def action_mydata(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     res = cursor.fetchone()
     conn.close()
     
-    keyboard = [[InlineKeyboardButton("Back to Main Menu", callback_data="back_menu")]]
+    keyboard = [[InlineKeyboardButton("Back", callback_data="back_menu")]]
     
     if not res:
         text = "<tg-emoji emoji-id=\"5334544901428229844\">ℹ️</tg-emoji>No Submission Found\n\nYou have not submitted any placement data yet."
@@ -654,7 +654,7 @@ async def action_mydata(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
 
 async def show_batch_menu(msg_obj):
     keyboard = [
-        [InlineKeyboardButton(text="2018 Batch", callback_data="batch_2018", style="primary", icon_custom_emoji_id="5368324170671202286")],
+        [InlineKeyboardButton("2018 Batch", callback_data="batch_2018")],
         [InlineKeyboardButton("2019 Batch", callback_data="batch_2019")],
         [InlineKeyboardButton("2020 Batch", callback_data="batch_2020")],
         [InlineKeyboardButton("Back", callback_data="back_menu")]
@@ -762,7 +762,7 @@ async def confirm_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
     await send_db_backup(context, caption=f"📦 Auto-Backup: New Submission by Hash {user_hash[:8]}")
 
-    keyboard = [[InlineKeyboardButton("Back to Main Menu", callback_data="back_menu")]]
+    keyboard = [[InlineKeyboardButton("Back", callback_data="back_menu")]]
     await edit_or_reply(query, "<tg-emoji emoji-id=\"5206607081334906820\">✔️</tg-emoji>Data saved successfully!\n\nYour details have been updated anonymously.", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
     return CHOOSING_ACTION
 
