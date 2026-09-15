@@ -654,7 +654,7 @@ async def action_mydata(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
 
 async def show_batch_menu(msg_obj):
     keyboard = [
-        [InlineKeyboardButton("2018 Batch", callback_data="batch_2018")],
+        [InlineKeyboardButton("2018 Batch", callback_data="batch_2018", style="success", icon_custom_emoji_id="5217822164362739968")],
         [InlineKeyboardButton("2019 Batch", callback_data="batch_2019")],
         [InlineKeyboardButton("2020 Batch", callback_data="batch_2020")],
         [InlineKeyboardButton("Back to Main Menu", callback_data="back_menu")]
